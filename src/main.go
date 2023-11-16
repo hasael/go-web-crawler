@@ -15,6 +15,8 @@ func main() {
 		fmt.Print(err.Error())
 	}
 
-	fmt.Print(urls)
+	for _, u := range urls {
+		fmt.Println(u)
+	}
 
 }
