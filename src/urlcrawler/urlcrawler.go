@@ -4,21 +4,65 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strings"
 )
 
-func GetUrls(url string) ([]string, error) {
+func CrawlUrls(inputUrl string) ([]string, error) {
 
-	resp, err := http.Get(url)
+	crawledUrls := make(map[string]bool)
+
+	innerCrawlUrls(inputUrl, crawledUrls)
+	result := make([]string, len(crawledUrls))
+	for k := range crawledUrls {
+		result = append(result, k)
+	}
+	return result, nil
+
+}
+
+func innerCrawlUrls(inputUrl string, crawled map[string]bool) {
+
+	if inputUrl != "" {
+		foundUrls, err := GetUrls(inputUrl)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		for _, foundUrl := range foundUrls {
+			_, ok := crawled[foundUrl]
+
+			if !ok {
+				crawled[foundUrl] = true
+				innerCrawlUrls(foundUrl, crawled)
+			}
+		}
+	}
+
+}
+
+func GetUrls(inputUrl string) ([]string, error) {
+	url, err := url.Parse(inputUrl)
 
 	if err != nil {
-		return nil, fmt.Errorf("GET error: %v", err)
+		return nil, err
+	}
+
+	hostname := strings.TrimPrefix(url.Hostname(), "www.")
+
+	resp, err := http.Get(inputUrl)
+
+	if err != nil {
+		return nil, fmt.Errorf("GET error: %v %v", inputUrl, err)
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status error %v", resp.StatusCode)
+		return nil, fmt.Errorf("status error %v %v", inputUrl, resp.StatusCode)
 	}
 
 	data, err := io.ReadAll(resp.Body)
@@ -27,7 +71,7 @@ func GetUrls(url string) ([]string, error) {
 		return nil, fmt.Errorf("read body: %v", err)
 	}
 
-	return parseForUrls(data, "monzo.com")
+	return parseForUrls(data, hostname)
 }
 
 func parseForUrls(data []byte, domain string) ([]string, error) {

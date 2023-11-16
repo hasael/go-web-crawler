@@ -9,7 +9,7 @@ import (
 func main() {
 	inUrl := os.Args[1]
 	fmt.Println("Crawling " + inUrl)
-	urls, err := urlcrawler.GetUrls(inUrl)
+	urls, err := urlcrawler.CrawlUrls(inUrl)
 
 	if err != nil {
 		fmt.Print(err.Error())
@@ -18,5 +18,4 @@ func main() {
 	for _, u := range urls {
 		fmt.Println(u)
 	}
-
 }
