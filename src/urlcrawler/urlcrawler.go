@@ -9,11 +9,11 @@ import (
 	"strings"
 )
 
-func CrawlUrls(inputUrl string) ([]string, error) {
+func (u UrlCrawlerT) CrawlUrls(inputUrl string) ([]string, error) {
 
 	crawledUrls := make(map[string]bool)
 
-	innerCrawlUrls(inputUrl, crawledUrls)
+	u.innerCrawlUrls(inputUrl, crawledUrls)
 	result := make([]string, len(crawledUrls))
 	for k := range crawledUrls {
 		result = append(result, k)
@@ -22,10 +22,10 @@ func CrawlUrls(inputUrl string) ([]string, error) {
 
 }
 
-func innerCrawlUrls(inputUrl string, crawled map[string]bool) {
+func (u UrlCrawlerT) innerCrawlUrls(inputUrl string, crawled map[string]bool) {
 
 	if inputUrl != "" {
-		foundUrls, err := GetUrls(inputUrl)
+		foundUrls, err := u.GetUrls(inputUrl)
 
 		if err != nil {
 			fmt.Println(err)
@@ -37,14 +37,29 @@ func innerCrawlUrls(inputUrl string, crawled map[string]bool) {
 
 			if !ok {
 				crawled[foundUrl] = true
-				innerCrawlUrls(foundUrl, crawled)
+				u.innerCrawlUrls(foundUrl, crawled)
 			}
 		}
 	}
 
 }
 
-func GetUrls(inputUrl string) ([]string, error) {
+type UrlClient interface {
+	Get(url string) (resp *http.Response, err error)
+}
+
+type UrlHttpClient struct {
+}
+
+func (u UrlHttpClient) Get(url string) (resp *http.Response, err error) {
+	return http.Get(url)
+}
+
+type UrlCrawlerT struct {
+	Client UrlClient
+}
+
+func (h UrlCrawlerT) GetUrls(inputUrl string) ([]string, error) {
 	url, err := url.Parse(inputUrl)
 
 	if err != nil {
@@ -53,7 +68,7 @@ func GetUrls(inputUrl string) ([]string, error) {
 
 	hostname := strings.TrimPrefix(url.Hostname(), "www.")
 
-	resp, err := http.Get(inputUrl)
+	resp, err := h.Client.Get(inputUrl)
 
 	if err != nil {
 		return nil, fmt.Errorf("GET error: %v %v", inputUrl, err)
