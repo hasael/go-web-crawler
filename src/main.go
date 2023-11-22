@@ -9,7 +9,9 @@ import (
 func main() {
 	inUrl := os.Args[1]
 	fmt.Println("Crawling " + inUrl)
-	urls, err := urlcrawler.CrawlUrls(inUrl)
+	u := new(urlcrawler.UrlCrawlerT)
+	u.Client = new(urlcrawler.UrlHttpClient)
+	urls, err := u.CrawlUrls(inUrl)
 
 	if err != nil {
 		fmt.Print(err.Error())
