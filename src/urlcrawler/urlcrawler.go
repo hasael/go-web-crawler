@@ -14,7 +14,7 @@ func (u UrlCrawlerT) CrawlUrls(inputUrl string) ([]string, error) {
 	crawledUrls := make(map[string]bool)
 
 	u.innerCrawlUrls(inputUrl, crawledUrls)
-	result := make([]string, len(crawledUrls))
+	result := make([]string, 0)
 	for k := range crawledUrls {
 		result = append(result, k)
 	}
@@ -66,7 +66,7 @@ func (h UrlCrawlerT) GetUrls(inputUrl string) ([]string, error) {
 		return nil, err
 	}
 
-	hostname := strings.TrimPrefix(url.Hostname(), "www.")
+	hostname := strings.TrimPrefix(url.Host, "www.")
 
 	resp, err := h.Client.Get(inputUrl)
 
@@ -98,7 +98,7 @@ func parseForUrls(data []byte, domain string) ([]string, error) {
 
 	matches := reg.FindAll(data, -1)
 
-	var result = make([]string, len(matches))
+	var result = make([]string, 0)
 
 	for _, byteArr := range matches {
 		result = append(result, string(byteArr))
