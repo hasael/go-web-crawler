@@ -104,9 +104,3 @@ func Test_CrawlUrls(t *testing.T) {
 
 	t.Log(result)
 }
-
-// TestHelloEmpty calls greetings.Hello with an empty string,
-// checking for an error.
-func TestHelloEmpty(t *testing.T) {
-
-}
